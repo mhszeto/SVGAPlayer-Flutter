@@ -1,11 +1,12 @@
 import 'dart:developer';
 import 'dart:ui' as ui;
-import 'dart:typed_data' show Uint8List;
+
+import 'package:archive/archive.dart' as archive;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart' show decodeImageFromList;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' show get;
-import 'package:archive/archive.dart' as archive;
+
 // ignore: import_of_legacy_library_into_null_safe
 import 'proto/svga.pbserver.dart';
 
@@ -34,7 +35,7 @@ class SVGAParser {
       timeline = TimelineTask(filterKey: _filterKey)
         ..start('DecodeFromBuffer', arguments: {'length': bytes.length});
     }
-    final inflatedBytes = archive.ZLibDecoder().decodeBytes(bytes);
+    final inflatedBytes = const archive.ZLibDecoder().decodeBytes(bytes);
     if (timeline != null) {
       timeline.instant('MovieEntity.fromBuffer()',
           arguments: {'inflatedLength': inflatedBytes.length});
@@ -53,10 +54,10 @@ class SVGAParser {
   }
 
   MovieEntity _processShapeItems(MovieEntity movieItem) {
-    movieItem.sprites.forEach((sprite) {
+    for (var sprite in movieItem.sprites) {
       List<ShapeEntity>? lastShape;
-      sprite.frames.forEach((frame) {
-        if (frame.shapes.isNotEmpty && frame.shapes.length > 0) {
+      for (var frame in sprite.frames) {
+        if (frame.shapes.isNotEmpty && frame.shapes.isNotEmpty) {
           if (frame.shapes[0].type == ShapeEntity_ShapeType.KEEP &&
               lastShape != null) {
             frame.shapes = lastShape;
@@ -64,8 +65,8 @@ class SVGAParser {
             lastShape = frame.shapes;
           }
         }
-      });
-    });
+      }
+    }
     return movieItem;
   }
 
